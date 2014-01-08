@@ -10,10 +10,6 @@
     auth: ['demo', 'demo']
   }, function() {
     var new_post, title__startswith;
-    console.log('api=', api);
-    console.log('-------------');
-    console.log('api(note)=', api('note'));
-    return;
     api('note').get();
     new_post = api('note').post({
       'title': 'My Test Note',

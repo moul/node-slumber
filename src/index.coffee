@@ -1,3 +1,4 @@
-module.exports =
-  API:       require('./API').API
-  Ressource: require('./Ressource').Ressource
+API = require('./API')
+
+module.exports = API
+module.exports.API = API
