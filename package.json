@@ -1,0 +1,30 @@
+{
+  "name": "slumber",
+  "version": "0.1.0",
+  "description": "Python's slumber port in Node.js",
+  "main": "lib/index.js",
+  "directories": {
+    "example": "examples",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/moul/node-slumber"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+  },
+  "keywords": [
+    "slumber",
+    "python",
+    "api",
+    "request"
+  ],
+  "author": "Manfred Touron <m@42.am>",
+  "license": "MIT",
+  "readmeFilename": "README.md"
+}
