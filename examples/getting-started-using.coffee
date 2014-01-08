@@ -16,6 +16,10 @@ api = slumber.API 'http://slumber.in/api/v1/', { auth: ['demo', 'demo'] }, ->
   # POST http://slumber.in/api/v1/note/
   new_post = api('note').post({'title': 'My Test Note', 'content': 'This is the content of my Test Note!'})
 
+  console.log new_post
+
+  return
+
   # PUT http://slumber.in/api/v1/note/{id}/
   api('note')(new_post['id']).put({'content': 'I just changed the content of my Test Note!'})
 

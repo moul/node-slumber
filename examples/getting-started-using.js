@@ -15,6 +15,8 @@
       'title': 'My Test Note',
       'content': 'This is the content of my Test Note!'
     });
+    console.log(new_post);
+    return;
     api('note')(new_post['id']).put({
       'content': 'I just changed the content of my Test Note!'
     });
