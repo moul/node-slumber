@@ -15,6 +15,8 @@ api = new slumber.API 'http://slumber.in/api/v1/', { auth: ['demo', 'demo'] }, -
     "api('note').base_url"
     #"api('note')(42)"
     "api('note')(42).base_url"
+    "api('note')(42)('comment').base_url"
+    "api('note')(42)('comment')(12345).base_url"
     ]
     console.log '----- ', entry
     console.log eval entry
