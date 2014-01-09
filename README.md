@@ -11,7 +11,9 @@ QuickStart
 
 1. Install Node's Slumber
 
-   $ npm install slumber
+    ```bash
+    $ npm install slumber
+    ```
 
 2. Use Node's Slumber
 
@@ -23,7 +25,7 @@ Requirements
 See also
 --------
 
-* [Examples](https://github.com/moul/node-slumber/tree/master/examples)
+* Browse [examples](https://github.com/moul/node-slumber/tree/master/examples) in CoffeeScript and Javascript
 
 License
 -------
