@@ -6,16 +6,15 @@
 
   slumber = require('..');
 
-  api = new slumber.API('http://slumber.in/api/v1/', {
+  api = new slumber.API('http://api.example.com/v1/', {
     auth: ['demo', 'demo']
   }, function() {
     var entry, _i, _len, _ref, _results;
-    _ref = ["api.base_url", "api('note').base_url", "api('note')(42).base_url"];
+    _ref = ["api.base_url", "api('note').base_url", "api('note')(42).base_url", "api('note')(42)('comment').base_url", "api('note')(42)('comment')(12345).base_url", "api('note/42/comment/12345').base_url"];
     _results = [];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       entry = _ref[_i];
-      console.log('----- ', entry);
-      _results.push(console.log(eval(entry)));
+      _results.push(console.log('-- ', entry, eval(entry)));
     }
     return _results;
   });

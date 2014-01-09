@@ -5,10 +5,11 @@
   "main": "lib/index.js",
   "directories": {
     "example": "examples",
-    "test": "test"
+    "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/mocha/bin/mocha tests",
+    "build": "./node_modules/coffee-script/bin/cake build"
   },
   "repository": {
     "type": "git",
@@ -18,12 +19,18 @@
     "request": "2.27"
   },
   "devDependencies": {
+    "coffee-script": "",
+    "mocha": ""
   },
   "keywords": [
     "slumber",
     "python",
     "api",
-    "request"
+    "request",
+    "rest",
+    "json",
+    "yaml",
+    "restful"
   ],
   "author": "Manfred Touron <m@42.am>",
   "license": "MIT",
