@@ -18,6 +18,16 @@
     return res.end('Hello World !');
   });
 
+  app.get('/customer', function(req, res) {
+    var obj;
+    obj = {
+      rand: Math.random(),
+      aaa: 'bbb',
+      ccc: 42
+    };
+    return res.json(obj);
+  });
+
   describe('Routing', function() {
     var api;
     api = slumber.API(base_url, {});
@@ -38,6 +48,29 @@
     });
   });
 
+  describe('JsonSerializer', function() {
+    var api;
+    api = slumber.API(base_url, {});
+    return describe('serializer', function() {
+      it('should be an object', function() {
+        return assert.equal('object', typeof api.serializer);
+      });
+      describe('#serializers', function() {
+        return it('should return an array of available serializers', function() {
+          return assert.equal('object', typeof api.serializer.serializers);
+        });
+      });
+      return describe('#get_serializer()', function() {
+        return it('should return the default serializer', function() {
+          var serializer;
+          serializer = api.serializer.get_serializer();
+          assert.equal('object', typeof serializer);
+          return assert.equal('json', serializer.key);
+        });
+      });
+    });
+  });
+
   describe('Local Express', function() {
     var api;
     api = null;
@@ -51,10 +84,21 @@
       });
     });
     return describe('Connection', function() {
-      return it('should connect to express and return a string Hello World', function(done) {
+      it('should connect to express and return a string Hello World', function(done) {
         return api.get(function(err, ret) {
           assert.equal(err, null);
           assert.equal(ret, 'Hello World !');
+          return done();
+        });
+      });
+      return it('should return a json object', function(done) {
+        return api('customer').get(function(err, ret) {
+          var _ref;
+          assert.equal(err, null);
+          assert.equal('object', typeof ret);
+          assert.equal((0 < (_ref = ret.rand) && _ref < 1), true);
+          assert.equal(ret.aaa, 'bbb');
+          assert.equal(ret.ccc, 42);
           return done();
         });
       });
