@@ -1,7 +1,7 @@
 debug = require('debug') 'slumber:api'
 {callable, append_slash} = require './utils'
 request = require 'request'
-
+{Serializer} = require './Serializer'
 
 API = callable class
   constructor: (base_url, @opts={}, fn=null) ->
@@ -12,8 +12,10 @@ API = callable class
     @opts.append_slash ?= true
     @opts.session ?= null
     @opts.auth ?= null
+
     @opts.format ?= 'json'
-    @opts.serializer ?= null
+    @serializer = @opts.serializer ?= new Serializer @opts.format
+
     if @opts.append_slash
       @opts.base_url = append_slash @opts.base_url
     @base_url = @opts.base_url
@@ -35,7 +37,16 @@ API = callable class
     return child
 
   _try_to_serialize: (response, body) =>
-    # FIXME: todo
+    if response.headers['content-type']?
+      content_type = response.headers['content-type']
+
+      try
+        stype = @serializer.get_serializer null, content_type
+      catch e
+        return body
+
+      return stype.loads body
+
     return body
 
   _request: (method, args, fn) =>
@@ -43,13 +54,14 @@ API = callable class
     request_options =
       url: @base_url
       method: method
+      headers:
+        accept: @serializer.get_serializer().get_content_type()
     req = request request_options, fn
 
   callable: @::_create_child
 
   get: (args..., fn) =>
     handle = (err, response, body) =>
-      console.log response.statusCode
       if 200 <= response.statusCode <= 299
         return fn err, @_try_to_serialize response, body
       else
