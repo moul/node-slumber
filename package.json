@@ -20,7 +20,9 @@
   },
   "devDependencies": {
     "coffee-script": "",
-    "mocha": ""
+    "mocha": "",
+    "express": "",
+    "freeport": ""
   },
   "keywords": [
     "slumber",
