@@ -9,14 +9,31 @@ slumber = require '..'
 base_url = 'http://www.example.com/'
 
 
+CUSTOMERS =
+  1:
+    user: 'Alfred'
+    gender: 'male'
+    age: 24
+  2:
+    user: 'George'
+    gender: 'male'
+    age: 42
+  3:
+    user: 'Cynthia'
+    gender: 'female'
+    age: 28
+
+
 app = express()
-app.get '/', (req, res) -> res.end 'Hello World !'
-app.get '/customer', (req, res) ->
-  obj =
-    rand: Math.random()
-    aaa: 'bbb'
-    ccc: 42
-  res.json obj
+
+app.get '/', (req, res) ->
+   res.end 'Hello World !'
+
+app.get '/customers', (req, res) ->
+  res.json CUSTOMERS
+
+app.get '/customers/:id', (req, res) ->
+  res.json CUSTOMERS[parseInt req.params.id]
 
 
 describe 'Routing', ->
@@ -67,11 +84,16 @@ describe 'Local Express', ->
         assert.equal ret, 'Hello World !'
         do done
 
-    it 'should return a json object', (done) ->
-      api('customer').get (err, ret) ->
+    it 'should return a list of customers', (done) ->
+      api('customers').get (err, ret) ->
         assert.equal err, null
         assert.equal 'object', typeof ret
-        assert.equal 0 < ret.rand < 1, true
-        assert.equal ret.aaa, 'bbb'
-        assert.equal ret.ccc, 42
+        assert.equal ret[1].user, CUSTOMERS[1].user
+        do done
+
+    it 'should return customer with id = 1', (done) ->
+      api('customers')(1).get (err, ret) ->
+        assert.equal ret.user, CUSTOMERS[1].user
+        assert.equal ret.age, CUSTOMERS[1].age
+        assert.equal ret.gender, CUSTOMERS[1].gender
         do done
