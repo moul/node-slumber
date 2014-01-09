@@ -1,5 +1,7 @@
 #!/usr/bin/env coffee
 
+querystring = require 'querystring'
+url = require 'url'
 assert = require 'assert'
 express = require 'express'
 freeport = require 'freeport'
@@ -30,7 +32,20 @@ app.get '/', (req, res) ->
    res.end 'Hello World !'
 
 app.get '/customers', (req, res) ->
-  res.json CUSTOMERS
+  url_parts = url.parse req.url
+  query = querystring.parse url_parts.query
+
+  ret = []
+  for customer_id, customer of CUSTOMERS
+    ok = true
+    for filter_key, filter_value of query
+      if customer[filter_key] != filter_value
+        ok = false
+        break
+    if ok
+      ret.push customer_id
+
+  res.json ret
 
 app.get '/customers/:id', (req, res) ->
   res.json CUSTOMERS[parseInt req.params.id]
@@ -88,7 +103,7 @@ describe 'Local Express', ->
       api('customers').get (err, ret) ->
         assert.equal err, null
         assert.equal 'object', typeof ret
-        assert.equal ret[1].user, CUSTOMERS[1].user
+        assert.equal ret.length, 3
         do done
 
     it 'should return customer with id = 1', (done) ->
@@ -96,4 +111,10 @@ describe 'Local Express', ->
         assert.equal ret.user, CUSTOMERS[1].user
         assert.equal ret.age, CUSTOMERS[1].age
         assert.equal ret.gender, CUSTOMERS[1].gender
+        do done
+
+    it 'should return a list of customers for gender=male', (done) ->
+      api('customers').get {'gender': 'male'}, (err, ret) ->
+        assert.equal err, null
+        assert.equal ret.length, 2
         do done

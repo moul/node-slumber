@@ -16,13 +16,15 @@
     "url": "https://github.com/moul/node-slumber"
   },
   "dependencies": {
-    "request": "2.27"
+    "request": "2.27",
+    "querystring": "0.2.0"
   },
   "devDependencies": {
     "coffee-script": "",
     "mocha": "",
     "express": "",
-    "freeport": ""
+    "freeport": "",
+    "url": "0.7"
   },
   "keywords": [
     "slumber",

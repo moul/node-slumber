@@ -1,3 +1,4 @@
+querystring = require 'querystring'
 debug = require('debug') 'slumber:api'
 {callable, append_slash} = require './utils'
 request = require 'request'
@@ -50,12 +51,14 @@ API = callable class
     return body
 
   _request: (method, args, fn) =>
-    debug "#{method}", args
     request_options =
       url: @base_url
       method: method
       headers:
         accept: @serializer.get_serializer().get_content_type()
+    if args[0]
+      request_options.url += '?' + querystring.stringify args[0]
+    debug "#{method}", request_options.url
     req = request request_options, fn
 
   callable: @::_create_child
@@ -68,9 +71,10 @@ API = callable class
         return fn true
     resp = @_request 'GET', args, handle
 
-  post: -> debug 'post', @base_url
-  patch: -> debug 'path'
-  put: -> debug 'put'
-  delete: -> debug 'delete'
+  # TODO
+  #post: -> debug 'post', @base_url
+  #patch: -> debug 'path'
+  #put: -> debug 'put'
+  #delete: -> debug 'delete'
 
 module.exports = API
