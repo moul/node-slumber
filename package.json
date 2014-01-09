@@ -1,6 +1,6 @@
 {
   "name": "slumber",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Port of Python's slumber library -- A library that makes consuming a RESTful API easier and more convenient",
   "main": "lib/index.js",
   "directories": {
@@ -15,6 +15,7 @@
     "url": "https://github.com/moul/node-slumber"
   },
   "dependencies": {
+    "request": "2.27"
   },
   "devDependencies": {
   },
