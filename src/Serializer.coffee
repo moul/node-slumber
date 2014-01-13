@@ -46,7 +46,13 @@ try
       'text/yaml'
       ]
     key: 'yaml'
-    # TODO: implements
+
+    loads: (data) =>
+      return yamljs.parse data
+
+    dumps: (data) =>
+      return yamljs.stringify data
+
   SERIALIZERS.yaml = YamlSerializer
 
 

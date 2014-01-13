@@ -62,6 +62,19 @@
     return res.json(ret);
   });
 
+  app.get('/customers-yml', function(req, res) {
+    var yamljs;
+    yamljs = require('yamljs');
+    return res.end(yamljs.stringify(CUSTOMERS));
+  });
+
+  app.get('/customers-yml-with-header', function(req, res) {
+    var yamljs;
+    yamljs = require('yamljs');
+    res.header('Content-Type', 'text/yaml');
+    return res.end(yamljs.stringify(CUSTOMERS));
+  });
+
   app.get('/customers/:id', function(req, res) {
     return res.json(CUSTOMERS[parseInt(req.params.id)]);
   });
@@ -144,10 +157,37 @@
         'format': 'yaml'
       });
       serializer = api.serializer.get_serializer();
-      return describe('#constructor', function() {
+      describe('#constructor', function() {
         return it('should be a valid Serializer', function() {
           assert.equal('object', typeof serializer);
           return assert.equal('yaml', serializer.key);
+        });
+      });
+      describe('#loads', function() {
+        return it('should loads jyaml encoded string and return a javascript object', function() {
+          var ret;
+          ret = serializer.loads('a: 42\nb:\n  - 43\n  - 45\n');
+          assert.equal('object', typeof ret);
+          assert.equal(ret.a, 42);
+          return assert.equal(ret.b.length, 2);
+        });
+      });
+      describe('#loads#error', function() {
+        return it('should raise an exception', function() {
+          return assert.throws((function() {
+            return serializer.loads('a: 42\nb:\n  - 43\n     -\n');
+          }));
+        });
+      });
+      return describe('#dumps', function() {
+        return it('should dumps a javascript object to a yaml encoded string', function() {
+          var ret;
+          ret = serializer.dumps({
+            a: 42,
+            b: [43, 45]
+          });
+          assert.equal('string', typeof ret);
+          return assert.equal(ret, 'a: 42\nb:\n  - 43\n  - 45\n');
         });
       });
     });
@@ -176,7 +216,7 @@
         return it('should raise an exception', function() {
           return assert.throws((function() {
             return serializer.loads('{"a": 42, "b": [43, 45]');
-          }), Error);
+          }));
         });
       });
       return describe('#dumps', function() {
@@ -241,12 +281,27 @@
           return done();
         });
       });
-      return it('should return an array (from json) of customers for gender=male', function(done) {
+      it('should return an array (from json) of customers for gender=male', function(done) {
         return api('customers').get({
           'gender': 'male'
         }, function(err, ret) {
           assert.equal(err, null);
           assert.equal(ret.length, 2);
+          return done();
+        });
+      });
+      it('should not detect yaml content-type and return an object', function(done) {
+        return api('customers-yml').get(function(err, ret) {
+          assert.equal(null, err);
+          assert.equal('string', typeof ret);
+          return done();
+        });
+      });
+      return it('should detect yaml content-type and return an object', function(done) {
+        return api('customers-yml-with-header').get(function(err, ret) {
+          assert.equal(null, err);
+          assert.equal('object', typeof ret);
+          assert.equal('Alfred', ret[1].user);
           return done();
         });
       });

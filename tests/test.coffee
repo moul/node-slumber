@@ -47,6 +47,15 @@ app.get '/customers', (req, res) ->
 
   res.json ret
 
+app.get '/customers-yml', (req, res) ->
+  yamljs = require 'yamljs'
+  res.end yamljs.stringify CUSTOMERS
+
+app.get '/customers-yml-with-header', (req, res) ->
+  yamljs = require 'yamljs'
+  res.header 'Content-Type', 'text/yaml'
+  res.end yamljs.stringify CUSTOMERS
+
 app.get '/customers/:id', (req, res) ->
   res.json CUSTOMERS[parseInt req.params.id]
 
@@ -111,6 +120,23 @@ describe 'Serializer', ->
         assert.equal 'object', typeof serializer
         assert.equal 'yaml', serializer.key
 
+    describe '#loads', ->
+      it 'should loads jyaml encoded string and return a javascript object', ->
+        ret = serializer.loads 'a: 42\nb:\n  - 43\n  - 45\n'
+        assert.equal 'object', typeof ret
+        assert.equal ret.a, 42
+        assert.equal ret.b.length, 2
+
+    describe '#loads#error', ->
+      it 'should raise an exception', ->
+        assert.throws (-> serializer.loads 'a: 42\nb:\n  - 43\n     -\n')
+
+    describe '#dumps', ->
+      it 'should dumps a javascript object to a yaml encoded string', ->
+        ret = serializer.dumps {a: 42, b: [43, 45]}
+        assert.equal 'string', typeof ret
+        assert.equal ret, 'a: 42\nb:\n  - 43\n  - 45\n'
+
   describe 'JsonSerializer', ->
     api = slumber.API base_url, {'format': 'json'}
     serializer = api.serializer.get_serializer()
@@ -129,7 +155,7 @@ describe 'Serializer', ->
 
     describe '#loads#error', ->
       it 'should raise an exception', ->
-        assert.throws (-> serializer.loads '{"a": 42, "b": [43, 45]'), Error
+        assert.throws (-> serializer.loads '{"a": 42, "b": [43, 45]')
 
     describe '#dumps', ->
       it 'should dumps a javascript object to a json encoded string', ->
@@ -182,3 +208,17 @@ describe 'Local Express', ->
         assert.equal err, null
         assert.equal ret.length, 2
         do done
+
+    it 'should not detect yaml content-type and return an object', (done) ->
+      api('customers-yml').get (err, ret) ->
+        assert.equal null, err
+        assert.equal 'string', typeof ret
+        do done
+
+    it 'should detect yaml content-type and return an object', (done) ->
+      api('customers-yml-with-header').get (err, ret) ->
+        assert.equal null, err
+        assert.equal 'object', typeof ret
+        assert.equal 'Alfred', ret[1].user
+        do done
+
