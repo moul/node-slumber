@@ -86,10 +86,10 @@
     });
   });
 
-  describe('JsonSerializer', function() {
-    var api;
-    api = slumber.API(base_url, {});
-    return describe('serializer', function() {
+  describe('Serializer', function() {
+    describe('serializer', function() {
+      var api;
+      api = slumber.API(base_url, {});
       it('should be an object', function() {
         return assert.equal('object', typeof api.serializer);
       });
@@ -98,12 +98,108 @@
           return assert.equal('object', typeof api.serializer.serializers);
         });
       });
-      return describe('#get_serializer()', function() {
+      describe('#get_serializer()', function() {
         return it('should return the default serializer', function() {
           var serializer;
           serializer = api.serializer.get_serializer();
           assert.equal('object', typeof serializer);
           return assert.equal('json', serializer.key);
+        });
+      });
+      describe('#get_by_name', function() {
+        return it('should return the best serializer depending on name', function() {
+          return assert.equal('yaml', api.serializer.get_serializer('yaml').key);
+        });
+      });
+      return describe('#get_by_content_type', function() {
+        return it('should return the best serializer depending on content-type', function() {
+          var k, mapping, v, _results;
+          mapping = {
+            'text/yaml': 'yaml',
+            'application/json': 'json',
+            'application/x-javascript': 'json',
+            'text/javascript': 'json',
+            'text/x-javascript': 'json',
+            'text/x-json': 'json',
+            'dontexists': null
+          };
+          _results = [];
+          for (k in mapping) {
+            v = mapping[k];
+            if (v === null) {
+              _results.push(assert.throws((function() {
+                return api.serializer.get_serializer(null, k);
+              }), /there is no available serializer for content-type/));
+            } else {
+              _results.push(assert.equal(v, api.serializer.get_serializer(null, k).key));
+            }
+          }
+          return _results;
+        });
+      });
+    });
+    describe('YamlSerializer', function() {
+      var api, serializer;
+      api = slumber.API(base_url, {
+        'format': 'yaml'
+      });
+      serializer = api.serializer.get_serializer();
+      return describe('#constructor', function() {
+        return it('should be a valid Serializer', function() {
+          assert.equal('object', typeof serializer);
+          return assert.equal('yaml', serializer.key);
+        });
+      });
+    });
+    describe('JsonSerializer', function() {
+      var api, serializer;
+      api = slumber.API(base_url, {
+        'format': 'json'
+      });
+      serializer = api.serializer.get_serializer();
+      describe('#constructor', function() {
+        return it('should be a valid Serializer', function() {
+          assert.equal('object', typeof serializer);
+          return assert.equal('json', serializer.key);
+        });
+      });
+      describe('#loads', function() {
+        return it('should loads json encoded string and return a javascript object', function() {
+          var ret;
+          ret = serializer.loads('{"a": 42, "b": [43, 45]}');
+          assert.equal('object', typeof ret);
+          assert.equal(ret.a, 42);
+          return assert.equal(ret.b.length, 2);
+        });
+      });
+      describe('#loads#error', function() {
+        return it('should raise an exception', function() {
+          return assert.throws((function() {
+            return serializer.loads('{"a": 42, "b": [43, 45]');
+          }), Error);
+        });
+      });
+      return describe('#dumps', function() {
+        return it('should dumps a javascript object to a json encoded string', function() {
+          var ret;
+          ret = serializer.dumps({
+            a: 42,
+            b: [43, 45]
+          });
+          assert.equal('string', typeof ret);
+          return assert.equal(ret, '{"a":42,"b":[43,45]}');
+        });
+      });
+    });
+    return describe('UnknownSerializer', function() {
+      return describe('#constructor', function() {
+        return it('should be an empty Serializer', function() {
+          var api, serializer;
+          api = slumber.API(base_url, {
+            'format': 'dontexists'
+          });
+          serializer = api.serializer.get_serializer();
+          return assert.equal(void 0, serializer);
         });
       });
     });
@@ -129,7 +225,7 @@
           return done();
         });
       });
-      it('should return a list of customers', function(done) {
+      it('should return an array (from json) of customers', function(done) {
         return api('customers').get(function(err, ret) {
           assert.equal(err, null);
           assert.equal('object', typeof ret);
@@ -137,7 +233,7 @@
           return done();
         });
       });
-      it('should return customer with id = 1', function(done) {
+      it('should return customer object (from json) with id = 1', function(done) {
         return api('customers')(1).get(function(err, ret) {
           assert.equal(ret.user, CUSTOMERS[1].user);
           assert.equal(ret.age, CUSTOMERS[1].age);
@@ -145,7 +241,7 @@
           return done();
         });
       });
-      return it('should return a list of customers for gender=male', function(done) {
+      return it('should return an array (from json) of customers for gender=male', function(done) {
         return api('customers').get({
           'gender': 'male'
         }, function(err, ret) {

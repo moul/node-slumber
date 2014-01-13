@@ -1,3 +1,5 @@
+debug = require('debug') 'slumber:Serializer'
+
 class BaseSerializer
   content_types: null
   key: null
@@ -17,6 +19,7 @@ class BaseSerializer
   dumps: (data) =>
     throw 'Not Implemented'
 
+SERIALIZERS = module.exports.SERIALIZERS = {}
 
 class JsonSerializer extends BaseSerializer
   content_types: [
@@ -34,22 +37,22 @@ class JsonSerializer extends BaseSerializer
   dumps: (data) =>
     return JSON.stringify data
 
+SERIALIZERS.json = JsonSerializer
 
-class YamlSerializer extends BaseSerializer
-  content_types: [
-    'text/yaml'
-    ]
-  key: 'yaml'
-  # TODO: implements
-
-
-SERIALIZERS = module.exports.SERIALIZERS =
-  'json': JsonSerializer
-  'yaml': YamlSerializer
+try
+  yamljs = require 'yamljs'
+  class YamlSerializer extends BaseSerializer
+    content_types: [
+      'text/yaml'
+      ]
+    key: 'yaml'
+    # TODO: implements
+  SERIALIZERS.yaml = YamlSerializer
 
 
 class module.exports.Serializer
   constructor: (@default='json', serializers=null) ->
+    debug 'constructor', "@default=#{@default}", "serializers=#{serializers}"
     unless serializers?
       serializers = [new obj for key, obj of SERIALIZERS][0]
 
@@ -61,8 +64,19 @@ class module.exports.Serializer
       @serializers[serializer.key] = serializer
 
   get_serializer: (name=null, content_type=null) =>
-    # TODO: dynamic
-    return @serializers[@default]
+    if name is null and content_type is null
+      return @serializers[@default]
+
+    if name?
+      if not @serializers[name]?
+        throw "#{name} is not an available serializer"
+      return @serializers[name]
+
+    if content_type?
+      for serializer_name, serializer of @serializers
+        for ctype in serializer.content_types
+          return serializer if content_type == ctype
+      throw "there is no available serializer for content-type #{content_type}"
 
   loads: (data, format=null) =>
     s = @get_serializer format

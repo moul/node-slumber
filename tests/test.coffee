@@ -66,9 +66,9 @@ describe 'Routing', ->
       assert.equal api('customers')(42).base_url, "#{base_url}customers/42/"
 
 
-describe 'JsonSerializer', ->
-  api = slumber.API base_url, {}
+describe 'Serializer', ->
   describe 'serializer', ->
+    api = slumber.API base_url, {}
     it 'should be an object', ->
       assert.equal 'object', typeof api.serializer
 
@@ -81,6 +81,70 @@ describe 'JsonSerializer', ->
         serializer = api.serializer.get_serializer()
         assert.equal 'object', typeof serializer
         assert.equal 'json', serializer.key
+
+    describe '#get_by_name', ->
+      it 'should return the best serializer depending on name', ->
+        assert.equal 'yaml', api.serializer.get_serializer('yaml').key
+
+    describe '#get_by_content_type', ->
+      it 'should return the best serializer depending on content-type', ->
+        mapping =
+          'text/yaml': 'yaml'
+          'application/json': 'json'
+          'application/x-javascript': 'json'
+          'text/javascript': 'json'
+          'text/x-javascript': 'json'
+          'text/x-json': 'json'
+          'dontexists': null
+        for k, v of mapping
+          if v is null
+            assert.throws (-> api.serializer.get_serializer(null, k)), /there is no available serializer for content-type/
+          else
+            assert.equal v, api.serializer.get_serializer(null, k).key
+
+  describe 'YamlSerializer', ->
+    api = slumber.API base_url, {'format': 'yaml'}
+    serializer = api.serializer.get_serializer()
+
+    describe '#constructor', ->
+      it 'should be a valid Serializer', ->
+        assert.equal 'object', typeof serializer
+        assert.equal 'yaml', serializer.key
+
+  describe 'JsonSerializer', ->
+    api = slumber.API base_url, {'format': 'json'}
+    serializer = api.serializer.get_serializer()
+
+    describe '#constructor', ->
+      it 'should be a valid Serializer', ->
+        assert.equal 'object', typeof serializer
+        assert.equal 'json', serializer.key
+
+    describe '#loads', ->
+      it 'should loads json encoded string and return a javascript object', ->
+        ret = serializer.loads '{"a": 42, "b": [43, 45]}'
+        assert.equal 'object', typeof ret
+        assert.equal ret.a, 42
+        assert.equal ret.b.length, 2
+
+    describe '#loads#error', ->
+      it 'should raise an exception', ->
+        assert.throws (-> serializer.loads '{"a": 42, "b": [43, 45]'), Error
+
+    describe '#dumps', ->
+      it 'should dumps a javascript object to a json encoded string', ->
+        ret = serializer.dumps {a: 42, b: [43, 45]}
+        assert.equal 'string', typeof ret
+        assert.equal ret, '{"a":42,"b":[43,45]}'
+
+
+  describe 'UnknownSerializer', ->
+    describe '#constructor', ->
+      it 'should be an empty Serializer', ->
+        api = slumber.API base_url, {'format': 'dontexists'}
+        serializer = api.serializer.get_serializer()
+        # should raise ?
+        assert.equal undefined, serializer
 
 
 describe 'Local Express', ->
@@ -99,21 +163,21 @@ describe 'Local Express', ->
         assert.equal ret, 'Hello World !'
         do done
 
-    it 'should return a list of customers', (done) ->
+    it 'should return an array (from json) of customers', (done) ->
       api('customers').get (err, ret) ->
         assert.equal err, null
         assert.equal 'object', typeof ret
         assert.equal ret.length, 3
         do done
 
-    it 'should return customer with id = 1', (done) ->
+    it 'should return customer object (from json) with id = 1', (done) ->
       api('customers')(1).get (err, ret) ->
         assert.equal ret.user, CUSTOMERS[1].user
         assert.equal ret.age, CUSTOMERS[1].age
         assert.equal ret.gender, CUSTOMERS[1].gender
         do done
 
-    it 'should return a list of customers for gender=male', (done) ->
+    it 'should return an array (from json) of customers for gender=male', (done) ->
       api('customers').get {'gender': 'male'}, (err, ret) ->
         assert.equal err, null
         assert.equal ret.length, 2

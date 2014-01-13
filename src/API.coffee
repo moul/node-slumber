@@ -39,7 +39,7 @@ API = callable class
 
   _try_to_serialize: (response, body) =>
     if response.headers['content-type']?
-      content_type = response.headers['content-type']
+      content_type = response.headers['content-type'].split(';')[0].replace(/^\s*|\s*$/g, '')
 
       try
         stype = @serializer.get_serializer null, content_type
