@@ -25,7 +25,8 @@
     "express": "",
     "freeport": "",
     "url": "0.7",
-    "yamljs": "0.1"
+    "yamljs": "0.1",
+    "connect": "2"
   },
   "optionalDependencies": {
     "yamljs": "0.1"
