@@ -80,6 +80,12 @@
     });
   });
 
+  app.patch('/test-patch', function(req, res) {
+    return res.json({
+      'parsed-body': req.body
+    });
+  });
+
   app.get('/customers-yml', function(req, res) {
     var yamljs;
     yamljs = require('yamljs');
@@ -314,6 +320,18 @@
           assert.equal('object', typeof ret);
           assert.equal(ret['parsed-body'].test, 42);
           assert.equal(ret['parsed-body'].test2, 'toto');
+          return done();
+        });
+      });
+      it('should patch data', function(done) {
+        return api('test-patch').patch({
+          'test': 43,
+          'test2': 'titi'
+        }, function(err, ret) {
+          assert.equal(err, null);
+          assert.equal('object', typeof ret);
+          assert.equal(ret['parsed-body'].test, 43);
+          assert.equal(ret['parsed-body'].test2, 'titi');
           return done();
         });
       });

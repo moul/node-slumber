@@ -56,6 +56,9 @@ app.post '/test-post', (req, res) ->
 app.put '/test-put', (req, res) ->
   res.json 'parsed-body': req.body
 
+app.patch '/test-patch', (req, res) ->
+  res.json 'parsed-body': req.body
+
 app.get '/customers-yml', (req, res) ->
   yamljs = require 'yamljs'
   res.end yamljs.stringify CUSTOMERS
@@ -220,6 +223,14 @@ describe 'Local Express', ->
         assert.equal 'object', typeof ret
         assert.equal ret['parsed-body'].test, 42
         assert.equal ret['parsed-body'].test2, 'toto'
+        do done
+
+    it 'should patch data', (done) ->
+      api('test-patch').patch {'test': 43, 'test2': 'titi'}, (err, ret) ->
+        assert.equal err, null
+        assert.equal 'object', typeof ret
+        assert.equal ret['parsed-body'].test, 43
+        assert.equal ret['parsed-body'].test2, 'titi'
         do done
 
     it 'should return customer object (from json) with id = 1', (done) ->
