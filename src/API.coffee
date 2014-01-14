@@ -50,29 +50,52 @@ API = callable class
 
     return body
 
-  _request: (method, args, fn) =>
+  _request: (method, kwargs, fn) =>
     request_options =
       url: @base_url
       method: method
       headers:
         accept: @serializer.get_serializer().get_content_type()
-    if args[0]
-      request_options.url += '?' + querystring.stringify args[0]
+
+    if kwargs.args?
+      request_options.url += '?' + querystring.stringify kwargs.args
+
+    if kwargs.data?
+      request_options.form = kwargs.data
+
     debug "#{method}", request_options.url
     req = request request_options, fn
 
   callable: @::_create_child
 
-  get: (args..., fn) =>
+  get: (kwargs, fn) =>
+    if 'function' is typeof kwargs
+      fn = kwargs
+      kwargs = {}
+    else
+      unless kwargs.args?
+        kwargs = args: kwargs
+
     handle = (err, response, body) =>
       if 200 <= response.statusCode <= 299
         return fn err, @_try_to_serialize response, body
       else
         return fn true
-    resp = @_request 'GET', args, handle
+
+    resp = @_request 'GET', kwargs, handle
+
+  post: (kwargs, fn) =>
+    unless 'args' in kwargs
+      kwargs = data: kwargs
+
+    handle = (err, response, body) =>
+      if 200 <= response.statusCode <= 299
+        return fn err, @_try_to_serialize response, body
+      return fn true
+
+    resp = @_request 'POST', kwargs, handle
 
   # TODO
-  #post: -> debug 'post', @base_url
   #patch: -> debug 'path'
   #put: -> debug 'put'
   #delete: -> debug 'delete'

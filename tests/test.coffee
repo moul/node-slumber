@@ -4,6 +4,7 @@ querystring = require 'querystring'
 url = require 'url'
 assert = require 'assert'
 express = require 'express'
+connect = require 'connect'
 freeport = require 'freeport'
 
 slumber = require '..'
@@ -27,6 +28,8 @@ CUSTOMERS =
 
 
 app = express()
+app.use connect.urlencoded()
+app.use connect.json()
 
 app.get '/', (req, res) ->
    res.end 'Hello World !'
@@ -46,6 +49,9 @@ app.get '/customers', (req, res) ->
       ret.push customer_id
 
   res.json ret
+
+app.post '/customers', (req, res) ->
+  res.json 'parsed-body': req.body
 
 app.get '/customers-yml', (req, res) ->
   yamljs = require 'yamljs'
@@ -196,6 +202,15 @@ describe 'Local Express', ->
         assert.equal ret.length, 3
         do done
 
+    it 'should post data', (done) ->
+      api('customers').post {'user': 'Mickael', 'age': 42, 'gender': 'male'}, (err, ret) ->
+        assert.equal err, null
+        assert.equal 'object', typeof ret
+        assert.equal ret['parsed-body'].user, 'Mickael'
+        assert.equal ret['parsed-body'].age, 42
+        assert.equal ret['parsed-body'].gender, 'male'
+        do done
+
     it 'should return customer object (from json) with id = 1', (done) ->
       api('customers')(1).get (err, ret) ->
         assert.equal ret.user, CUSTOMERS[1].user
@@ -205,6 +220,12 @@ describe 'Local Express', ->
 
     it 'should return an array (from json) of customers for gender=male', (done) ->
       api('customers').get {'gender': 'male'}, (err, ret) ->
+        assert.equal err, null
+        assert.equal ret.length, 2
+        do done
+
+    it 'should return an array (from json) of customers for gender=male explicitely defining args', (done) ->
+      api('customers').get {'args': {'gender': 'male'}}, (err, ret) ->
         assert.equal err, null
         assert.equal ret.length, 2
         do done
