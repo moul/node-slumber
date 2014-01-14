@@ -80,6 +80,10 @@
     });
   });
 
+  app["delete"]('/test-delete', function(req, res) {
+    return res.json('test ok');
+  });
+
   app.patch('/test-patch', function(req, res) {
     return res.json({
       'parsed-body': req.body
@@ -332,6 +336,13 @@
           assert.equal('object', typeof ret);
           assert.equal(ret['parsed-body'].test, 43);
           assert.equal(ret['parsed-body'].test2, 'titi');
+          return done();
+        });
+      });
+      it('should delete data', function(done) {
+        return api('test-delete')["delete"](function(err, ret) {
+          assert.equal(err, null);
+          assert.equal(ret, true);
           return done();
         });
       });

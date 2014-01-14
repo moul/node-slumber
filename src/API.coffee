@@ -84,6 +84,25 @@ API = callable class
 
     resp = @_request 'GET', kwargs, handle
 
+  delete: (kwargs, fn) =>
+    if 'function' is typeof kwargs
+      fn = kwargs
+      kwargs = {}
+    else
+      unless kwargs.args?
+        kwargs = args: kwargs
+
+    handle = (err, response, body) =>
+      if 200 <= response.statusCode <= 299
+        if response.statusCode == 204
+          return fn err, true
+        else
+          return fn err, true
+      else
+        return fn true, false
+
+    resp = @_request 'DELETE', kwargs, handle
+
   post: (kwargs, fn) =>
     unless 'args' in kwargs
       kwargs = data: kwargs
@@ -117,7 +136,5 @@ API = callable class
 
     resp = @_request 'PATCH', kwargs, handle
 
-  # TODO
-  #delete: -> debug 'delete'
 
 module.exports = API

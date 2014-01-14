@@ -56,6 +56,9 @@ app.post '/test-post', (req, res) ->
 app.put '/test-put', (req, res) ->
   res.json 'parsed-body': req.body
 
+app.delete '/test-delete', (req, res) ->
+  res.json 'test ok'
+
 app.patch '/test-patch', (req, res) ->
   res.json 'parsed-body': req.body
 
@@ -231,6 +234,12 @@ describe 'Local Express', ->
         assert.equal 'object', typeof ret
         assert.equal ret['parsed-body'].test, 43
         assert.equal ret['parsed-body'].test2, 'titi'
+        do done
+
+    it 'should delete data', (done) ->
+      api('test-delete').delete (err, ret) ->
+        assert.equal err, null
+        assert.equal ret, true
         do done
 
     it 'should return customer object (from json) with id = 1', (done) ->
