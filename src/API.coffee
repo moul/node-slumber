@@ -95,9 +95,19 @@ API = callable class
 
     resp = @_request 'POST', kwargs, handle
 
+  put: (kwargs, fn) =>
+    unless 'args' in kwargs
+      kwargs = data: kwargs
+
+    handle = (err, response, body) =>
+      if 200 <= response.statusCode <= 299
+        return fn err, @_try_to_serialize response, body
+      return fn true
+
+    resp = @_request 'PUT', kwargs, handle
+
   # TODO
   #patch: -> debug 'path'
-  #put: -> debug 'put'
   #delete: -> debug 'delete'
 
 module.exports = API

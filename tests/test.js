@@ -68,7 +68,13 @@
     return res.json(ret);
   });
 
-  app.post('/customers', function(req, res) {
+  app.post('/test-post', function(req, res) {
+    return res.json({
+      'parsed-body': req.body
+    });
+  });
+
+  app.put('/test-put', function(req, res) {
     return res.json({
       'parsed-body': req.body
     });
@@ -286,7 +292,7 @@
         });
       });
       it('should post data', function(done) {
-        return api('customers').post({
+        return api('test-post').post({
           'user': 'Mickael',
           'age': 42,
           'gender': 'male'
@@ -296,6 +302,18 @@
           assert.equal(ret['parsed-body'].user, 'Mickael');
           assert.equal(ret['parsed-body'].age, 42);
           assert.equal(ret['parsed-body'].gender, 'male');
+          return done();
+        });
+      });
+      it('should put data', function(done) {
+        return api('test-put').put({
+          'test': 42,
+          'test2': 'toto'
+        }, function(err, ret) {
+          assert.equal(err, null);
+          assert.equal('object', typeof ret);
+          assert.equal(ret['parsed-body'].test, 42);
+          assert.equal(ret['parsed-body'].test2, 'toto');
           return done();
         });
       });

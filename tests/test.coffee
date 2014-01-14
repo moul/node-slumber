@@ -50,7 +50,10 @@ app.get '/customers', (req, res) ->
 
   res.json ret
 
-app.post '/customers', (req, res) ->
+app.post '/test-post', (req, res) ->
+  res.json 'parsed-body': req.body
+
+app.put '/test-put', (req, res) ->
   res.json 'parsed-body': req.body
 
 app.get '/customers-yml', (req, res) ->
@@ -203,12 +206,20 @@ describe 'Local Express', ->
         do done
 
     it 'should post data', (done) ->
-      api('customers').post {'user': 'Mickael', 'age': 42, 'gender': 'male'}, (err, ret) ->
+      api('test-post').post {'user': 'Mickael', 'age': 42, 'gender': 'male'}, (err, ret) ->
         assert.equal err, null
         assert.equal 'object', typeof ret
         assert.equal ret['parsed-body'].user, 'Mickael'
         assert.equal ret['parsed-body'].age, 42
         assert.equal ret['parsed-body'].gender, 'male'
+        do done
+
+    it 'should put data', (done) ->
+      api('test-put').put {'test': 42, 'test2': 'toto'}, (err, ret) ->
+        assert.equal err, null
+        assert.equal 'object', typeof ret
+        assert.equal ret['parsed-body'].test, 42
+        assert.equal ret['parsed-body'].test2, 'toto'
         do done
 
     it 'should return customer object (from json) with id = 1', (done) ->
