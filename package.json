@@ -9,7 +9,9 @@
   },
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha tests",
-    "build": "./node_modules/coffee-script/bin/cake build"
+    "watch-test": "./node_modules/mocha/bin/mocha -w tests",
+    "build": "./node_modules/coffee-script/bin/cake build",
+    "watch": "./node_modules/coffee-script/bin/cake watch"
   },
   "repository": {
     "type": "git",
