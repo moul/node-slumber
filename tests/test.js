@@ -46,6 +46,12 @@
     return res.end('Hello World !');
   });
 
+  app.get('/test-auth', function(req, res) {
+    return res.json({
+      'headers': req.headers
+    });
+  });
+
   app.get('/customers', function(req, res) {
     var customer, customer_id, filter_key, filter_value, ok, query, ret, url_parts;
     url_parts = url.parse(req.url);
@@ -274,119 +280,143 @@
   });
 
   describe('Local Express', function() {
-    var api;
+    var api, port;
     api = null;
-    before(function(done) {
-      return freeport(function(err, port) {
-        return app.listen(port, function() {
-          return api = slumber.API("http://localhost:" + port + "/", {}, function() {
+    port = null;
+    describe('Authenticated', function() {
+      before(function(done) {
+        return freeport(function(err, _port) {
+          port = _port;
+          return app.listen(port, function() {
+            return done();
+          });
+        });
+      });
+      return it('should send connection detail', function(done) {
+        return api = slumber.API("http://localhost:" + port + "/", {
+          auth: ['admin', 'secure']
+        }, function() {
+          return api('test-auth').get(function(err, ret) {
+            assert.equal(err, null);
+            assert.equal(ret.headers.authorization, 'Basic YWRtaW46c2VjdXJl');
             return done();
           });
         });
       });
     });
-    return describe('Connection', function() {
-      it('should connect to express and return a string Hello World', function(done) {
-        return api.get(function(err, ret) {
-          assert.equal(err, null);
-          assert.equal(ret, 'Hello World !');
-          return done();
+    return describe('Anonymous', function() {
+      before(function(done) {
+        return freeport(function(err, port) {
+          return app.listen(port, function() {
+            return api = slumber.API("http://localhost:" + port + "/", {}, function() {
+              return done();
+            });
+          });
         });
       });
-      it('should return an array (from json) of customers', function(done) {
-        return api('customers').get(function(err, ret) {
-          assert.equal(err, null);
-          assert.equal('object', typeof ret);
-          assert.equal(ret.length, 3);
-          return done();
+      return describe('Connection', function() {
+        it('should connect to express and return a string Hello World', function(done) {
+          return api.get(function(err, ret) {
+            assert.equal(err, null);
+            assert.equal(ret, 'Hello World !');
+            return done();
+          });
         });
-      });
-      it('should post data', function(done) {
-        return api('test-post').post({
-          'user': 'Mickael',
-          'age': 42,
-          'gender': 'male'
-        }, function(err, ret) {
-          assert.equal(err, null);
-          assert.equal('object', typeof ret);
-          assert.equal(ret['parsed-body'].user, 'Mickael');
-          assert.equal(ret['parsed-body'].age, 42);
-          assert.equal(ret['parsed-body'].gender, 'male');
-          return done();
+        it('should return an array (from json) of customers', function(done) {
+          return api('customers').get(function(err, ret) {
+            assert.equal(err, null);
+            assert.equal('object', typeof ret);
+            assert.equal(ret.length, 3);
+            return done();
+          });
         });
-      });
-      it('should put data', function(done) {
-        return api('test-put').put({
-          'test': 42,
-          'test2': 'toto'
-        }, function(err, ret) {
-          assert.equal(err, null);
-          assert.equal('object', typeof ret);
-          assert.equal(ret['parsed-body'].test, 42);
-          assert.equal(ret['parsed-body'].test2, 'toto');
-          return done();
-        });
-      });
-      it('should patch data', function(done) {
-        return api('test-patch').patch({
-          'test': 43,
-          'test2': 'titi'
-        }, function(err, ret) {
-          assert.equal(err, null);
-          assert.equal('object', typeof ret);
-          assert.equal(ret['parsed-body'].test, 43);
-          assert.equal(ret['parsed-body'].test2, 'titi');
-          return done();
-        });
-      });
-      it('should delete data', function(done) {
-        return api('test-delete')["delete"](function(err, ret) {
-          assert.equal(err, null);
-          assert.equal(ret, true);
-          return done();
-        });
-      });
-      it('should return customer object (from json) with id = 1', function(done) {
-        return api('customers')(1).get(function(err, ret) {
-          assert.equal(ret.user, CUSTOMERS[1].user);
-          assert.equal(ret.age, CUSTOMERS[1].age);
-          assert.equal(ret.gender, CUSTOMERS[1].gender);
-          return done();
-        });
-      });
-      it('should return an array (from json) of customers for gender=male', function(done) {
-        return api('customers').get({
-          'gender': 'male'
-        }, function(err, ret) {
-          assert.equal(err, null);
-          assert.equal(ret.length, 2);
-          return done();
-        });
-      });
-      it('should return an array (from json) of customers for gender=male explicitely defining args', function(done) {
-        return api('customers').get({
-          'args': {
+        it('should post data', function(done) {
+          return api('test-post').post({
+            'user': 'Mickael',
+            'age': 42,
             'gender': 'male'
-          }
-        }, function(err, ret) {
-          assert.equal(err, null);
-          assert.equal(ret.length, 2);
-          return done();
+          }, function(err, ret) {
+            assert.equal(err, null);
+            assert.equal('object', typeof ret);
+            assert.equal(ret['parsed-body'].user, 'Mickael');
+            assert.equal(ret['parsed-body'].age, 42);
+            assert.equal(ret['parsed-body'].gender, 'male');
+            return done();
+          });
         });
-      });
-      it('should not detect yaml content-type and return an object', function(done) {
-        return api('customers-yml').get(function(err, ret) {
-          assert.equal(null, err);
-          assert.equal('string', typeof ret);
-          return done();
+        it('should put data', function(done) {
+          return api('test-put').put({
+            'test': 42,
+            'test2': 'toto'
+          }, function(err, ret) {
+            assert.equal(err, null);
+            assert.equal('object', typeof ret);
+            assert.equal(ret['parsed-body'].test, 42);
+            assert.equal(ret['parsed-body'].test2, 'toto');
+            return done();
+          });
         });
-      });
-      return it('should detect yaml content-type and return an object', function(done) {
-        return api('customers-yml-with-header').get(function(err, ret) {
-          assert.equal(null, err);
-          assert.equal('object', typeof ret);
-          assert.equal('Alfred', ret[1].user);
-          return done();
+        it('should patch data', function(done) {
+          return api('test-patch').patch({
+            'test': 43,
+            'test2': 'titi'
+          }, function(err, ret) {
+            assert.equal(err, null);
+            assert.equal('object', typeof ret);
+            assert.equal(ret['parsed-body'].test, 43);
+            assert.equal(ret['parsed-body'].test2, 'titi');
+            return done();
+          });
+        });
+        it('should delete data', function(done) {
+          return api('test-delete')["delete"](function(err, ret) {
+            assert.equal(err, null);
+            assert.equal(ret, true);
+            return done();
+          });
+        });
+        it('should return customer object (from json) with id = 1', function(done) {
+          return api('customers')(1).get(function(err, ret) {
+            assert.equal(ret.user, CUSTOMERS[1].user);
+            assert.equal(ret.age, CUSTOMERS[1].age);
+            assert.equal(ret.gender, CUSTOMERS[1].gender);
+            return done();
+          });
+        });
+        it('should return an array (from json) of customers for gender=male', function(done) {
+          return api('customers').get({
+            'gender': 'male'
+          }, function(err, ret) {
+            assert.equal(err, null);
+            assert.equal(ret.length, 2);
+            return done();
+          });
+        });
+        it('should return an array (from json) of customers for gender=male explicitely defining args', function(done) {
+          return api('customers').get({
+            'args': {
+              'gender': 'male'
+            }
+          }, function(err, ret) {
+            assert.equal(err, null);
+            assert.equal(ret.length, 2);
+            return done();
+          });
+        });
+        it('should not detect yaml content-type and return an object', function(done) {
+          return api('customers-yml').get(function(err, ret) {
+            assert.equal(null, err);
+            assert.equal('string', typeof ret);
+            return done();
+          });
+        });
+        return it('should detect yaml content-type and return an object', function(done) {
+          return api('customers-yml-with-header').get(function(err, ret) {
+            assert.equal(null, err);
+            assert.equal('object', typeof ret);
+            assert.equal('Alfred', ret[1].user);
+            return done();
+          });
         });
       });
     });

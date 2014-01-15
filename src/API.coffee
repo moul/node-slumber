@@ -11,7 +11,7 @@ API = callable class
     if base_url?
       @opts.base_url = base_url
     @opts.append_slash ?= true
-    @opts.session ?= null
+    #@opts.session ?= null
     @opts.auth ?= null
 
     @opts.format ?= 'json'
@@ -62,6 +62,12 @@ API = callable class
 
     if kwargs.data?
       request_options.form = kwargs.data
+
+    if @opts.auth
+      request_options.auth =
+        user: @opts.auth[0]
+        pass: @opts.auth[1]
+        sentImmediately: true
 
     debug "#{method}", request_options.url
     req = request request_options, fn

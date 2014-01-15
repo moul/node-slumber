@@ -34,6 +34,9 @@ app.use connect.json()
 app.get '/', (req, res) ->
    res.end 'Hello World !'
 
+app.get '/test-auth', (req, res) ->
+  res.json 'headers': req.headers
+
 app.get '/customers', (req, res) ->
   url_parts = url.parse req.url
   query = querystring.parse url_parts.query
@@ -190,87 +193,104 @@ describe 'Serializer', ->
 
 describe 'Local Express', ->
   api = null
+  port = null
 
-  before (done) ->
-    freeport (err, port) ->
-      app.listen port, ->
-        api = slumber.API "http://localhost:#{port}/", {}, ->
+  describe 'Authenticated', ->
+    before (done) ->
+      freeport (err, _port) ->
+        port = _port
+        app.listen port, ->
           do done
 
-  describe 'Connection', ->
-    it 'should connect to express and return a string Hello World', (done) ->
-      api.get (err, ret) ->
-        assert.equal err, null
-        assert.equal ret, 'Hello World !'
-        do done
+    it 'should send connection detail', (done) ->
+      api = slumber.API "http://localhost:#{port}/", {auth: ['admin', 'secure']}, ->
+        api('test-auth').get (err, ret) ->
+          assert.equal err, null
+          assert.equal ret.headers.authorization, 'Basic YWRtaW46c2VjdXJl'
+          do done
 
-    it 'should return an array (from json) of customers', (done) ->
-      api('customers').get (err, ret) ->
-        assert.equal err, null
-        assert.equal 'object', typeof ret
-        assert.equal ret.length, 3
-        do done
 
-    it 'should post data', (done) ->
-      api('test-post').post {'user': 'Mickael', 'age': 42, 'gender': 'male'}, (err, ret) ->
-        assert.equal err, null
-        assert.equal 'object', typeof ret
-        assert.equal ret['parsed-body'].user, 'Mickael'
-        assert.equal ret['parsed-body'].age, 42
-        assert.equal ret['parsed-body'].gender, 'male'
-        do done
+  describe 'Anonymous', ->
+    before (done) ->
+      freeport (err, port) ->
+        app.listen port, ->
+          api = slumber.API "http://localhost:#{port}/", {}, ->
+            do done
 
-    it 'should put data', (done) ->
-      api('test-put').put {'test': 42, 'test2': 'toto'}, (err, ret) ->
-        assert.equal err, null
-        assert.equal 'object', typeof ret
-        assert.equal ret['parsed-body'].test, 42
-        assert.equal ret['parsed-body'].test2, 'toto'
-        do done
+    describe 'Connection', ->
+      it 'should connect to express and return a string Hello World', (done) ->
+        api.get (err, ret) ->
+          assert.equal err, null
+          assert.equal ret, 'Hello World !'
+          do done
 
-    it 'should patch data', (done) ->
-      api('test-patch').patch {'test': 43, 'test2': 'titi'}, (err, ret) ->
-        assert.equal err, null
-        assert.equal 'object', typeof ret
-        assert.equal ret['parsed-body'].test, 43
-        assert.equal ret['parsed-body'].test2, 'titi'
-        do done
+      it 'should return an array (from json) of customers', (done) ->
+        api('customers').get (err, ret) ->
+          assert.equal err, null
+          assert.equal 'object', typeof ret
+          assert.equal ret.length, 3
+          do done
 
-    it 'should delete data', (done) ->
-      api('test-delete').delete (err, ret) ->
-        assert.equal err, null
-        assert.equal ret, true
-        do done
+      it 'should post data', (done) ->
+        api('test-post').post {'user': 'Mickael', 'age': 42, 'gender': 'male'}, (err, ret) ->
+          assert.equal err, null
+          assert.equal 'object', typeof ret
+          assert.equal ret['parsed-body'].user, 'Mickael'
+          assert.equal ret['parsed-body'].age, 42
+          assert.equal ret['parsed-body'].gender, 'male'
+          do done
 
-    it 'should return customer object (from json) with id = 1', (done) ->
-      api('customers')(1).get (err, ret) ->
-        assert.equal ret.user, CUSTOMERS[1].user
-        assert.equal ret.age, CUSTOMERS[1].age
-        assert.equal ret.gender, CUSTOMERS[1].gender
-        do done
+      it 'should put data', (done) ->
+        api('test-put').put {'test': 42, 'test2': 'toto'}, (err, ret) ->
+          assert.equal err, null
+          assert.equal 'object', typeof ret
+          assert.equal ret['parsed-body'].test, 42
+          assert.equal ret['parsed-body'].test2, 'toto'
+          do done
 
-    it 'should return an array (from json) of customers for gender=male', (done) ->
-      api('customers').get {'gender': 'male'}, (err, ret) ->
-        assert.equal err, null
-        assert.equal ret.length, 2
-        do done
+      it 'should patch data', (done) ->
+        api('test-patch').patch {'test': 43, 'test2': 'titi'}, (err, ret) ->
+          assert.equal err, null
+          assert.equal 'object', typeof ret
+          assert.equal ret['parsed-body'].test, 43
+          assert.equal ret['parsed-body'].test2, 'titi'
+          do done
 
-    it 'should return an array (from json) of customers for gender=male explicitely defining args', (done) ->
-      api('customers').get {'args': {'gender': 'male'}}, (err, ret) ->
-        assert.equal err, null
-        assert.equal ret.length, 2
-        do done
+      it 'should delete data', (done) ->
+        api('test-delete').delete (err, ret) ->
+          assert.equal err, null
+          assert.equal ret, true
+          do done
 
-    it 'should not detect yaml content-type and return an object', (done) ->
-      api('customers-yml').get (err, ret) ->
-        assert.equal null, err
-        assert.equal 'string', typeof ret
-        do done
+      it 'should return customer object (from json) with id = 1', (done) ->
+        api('customers')(1).get (err, ret) ->
+          assert.equal ret.user, CUSTOMERS[1].user
+          assert.equal ret.age, CUSTOMERS[1].age
+          assert.equal ret.gender, CUSTOMERS[1].gender
+          do done
 
-    it 'should detect yaml content-type and return an object', (done) ->
-      api('customers-yml-with-header').get (err, ret) ->
-        assert.equal null, err
-        assert.equal 'object', typeof ret
-        assert.equal 'Alfred', ret[1].user
-        do done
+      it 'should return an array (from json) of customers for gender=male', (done) ->
+        api('customers').get {'gender': 'male'}, (err, ret) ->
+          assert.equal err, null
+          assert.equal ret.length, 2
+          do done
+
+      it 'should return an array (from json) of customers for gender=male explicitely defining args', (done) ->
+        api('customers').get {'args': {'gender': 'male'}}, (err, ret) ->
+          assert.equal err, null
+          assert.equal ret.length, 2
+          do done
+
+      it 'should not detect yaml content-type and return an object', (done) ->
+        api('customers-yml').get (err, ret) ->
+          assert.equal null, err
+          assert.equal 'string', typeof ret
+          do done
+
+      it 'should detect yaml content-type and return an object', (done) ->
+        api('customers-yml-with-header').get (err, ret) ->
+          assert.equal null, err
+          assert.equal 'object', typeof ret
+          assert.equal 'Alfred', ret[1].user
+          do done
 
