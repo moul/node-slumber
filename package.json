@@ -1,6 +1,6 @@
 {
   "name": "slumber",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Port of Python's slumber library -- A library that makes consuming a RESTful API easier and more convenient",
   "main": "lib/index.js",
   "directories": {
