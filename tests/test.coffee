@@ -276,7 +276,7 @@ describe 'Local Express', ->
           do done
 
       it 'should return an array (from json) of customers for gender=male explicitely defining args', (done) ->
-        api('customers').get {'args': {'gender': 'male'}}, (err, ret) ->
+        api('customers').get {'__args': {'gender': 'male'}}, (err, ret) ->
           assert.equal err, null
           assert.equal ret.length, 2
           do done

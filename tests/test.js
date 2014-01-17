@@ -394,7 +394,7 @@
         });
         it('should return an array (from json) of customers for gender=male explicitely defining args', function(done) {
           return api('customers').get({
-            'args': {
+            '__args': {
               'gender': 'male'
             }
           }, function(err, ret) {

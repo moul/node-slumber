@@ -6,13 +6,15 @@ request = require 'request'
 
 API = callable class
   constructor: (base_url, @opts={}, fn=null) ->
-    debug "constructor base_url=#{base_url}"
+    #debug "constructor base_url=#{base_url}"
 
     if base_url?
       @opts.base_url = base_url
     @opts.append_slash ?= true
     #@opts.session ?= null
     @opts.auth ?= null
+    @opts.request_opts ?=
+      rejectUnauthorized: false
 
     @opts.format ?= 'json'
     @serializer = @opts.serializer ?= new Serializer @opts.format
@@ -56,6 +58,8 @@ API = callable class
       method: method
       headers:
         accept: @serializer.get_serializer().get_content_type()
+    for key, value of @opts.request_opts
+      request_options[key] = value unless request_options[key]?
 
     if kwargs.args?
       request_options.url += '?' + querystring.stringify kwargs.args
@@ -74,29 +78,48 @@ API = callable class
 
   callable: @::_create_child
 
-  get: (kwargs, fn) =>
-    if 'function' is typeof kwargs
-      fn = kwargs
-      kwargs = {}
-    else
-      unless kwargs.args?
-        kwargs = args: kwargs
+  _prepare_opts: (from, default_dest='args') =>
+    to = {
+      args: {}
+      data: {}
+      }
+
+    translation =
+      query: 'args'
+
+    for key, value of from
+      if key[0...2] == '__'
+        section = key[2...]
+        if translation[section]?
+          section = translation[section]
+        for k, v of value
+          to[section][k] = v
+      else
+        to[default_dest][key] = value
+
+    return to
+
+  get: (query, fn) =>
+    if 'function' is typeof query
+      fn = query
+      query = {}
+
+    opts = @_prepare_opts query, 'args'
 
     handle = (err, response, body) =>
       if 200 <= response.statusCode <= 299
         return fn err, @_try_to_serialize response, body
       else
-        return fn true
+        return fn true, response.statusCode
 
-    resp = @_request 'GET', kwargs, handle
+    resp = @_request 'GET', opts, handle
 
-  delete: (kwargs, fn) =>
-    if 'function' is typeof kwargs
-      fn = kwargs
-      kwargs = {}
-    else
-      unless kwargs.args?
-        kwargs = args: kwargs
+  delete: (query, fn) =>
+    if 'function' is typeof query
+      fn = query
+      query = {}
+
+    opts = @_prepare_opts query, 'args'
 
     handle = (err, response, body) =>
       if 200 <= response.statusCode <= 299
@@ -107,40 +130,37 @@ API = callable class
       else
         return fn true, false
 
-    resp = @_request 'DELETE', kwargs, handle
+    resp = @_request 'DELETE', opts, handle
 
-  post: (kwargs, fn) =>
-    unless 'args' in kwargs
-      kwargs = data: kwargs
-
-    handle = (err, response, body) =>
-      if 200 <= response.statusCode <= 299
-        return fn err, @_try_to_serialize response, body
-      return fn true
-
-    resp = @_request 'POST', kwargs, handle
-
-  put: (kwargs, fn) =>
-    unless 'args' in kwargs
-      kwargs = data: kwargs
+  post: (data, fn) =>
+    opts = @_prepare_opts data, 'data'
 
     handle = (err, response, body) =>
       if 200 <= response.statusCode <= 299
         return fn err, @_try_to_serialize response, body
       return fn true
 
-    resp = @_request 'PUT', kwargs, handle
+    resp = @_request 'POST', opts, handle
 
-  patch: (kwargs, fn) =>
-    unless 'args' in kwargs
-      kwargs = data: kwargs
+  put: (data, fn) =>
+    opts = @_prepare_opts data, 'data'
 
     handle = (err, response, body) =>
       if 200 <= response.statusCode <= 299
         return fn err, @_try_to_serialize response, body
       return fn true
 
-    resp = @_request 'PATCH', kwargs, handle
+    resp = @_request 'PUT', opts, handle
+
+  patch: (data, fn) =>
+    opts = @_prepare_opts data, 'data'
+
+    handle = (err, response, body) =>
+      if 200 <= response.statusCode <= 299
+        return fn err, @_try_to_serialize response, body
+      return fn true
+
+    resp = @_request 'PATCH', opts, handle
 
 
 module.exports = API
