@@ -99,6 +99,15 @@ API = callable class
 
     return to
 
+  wrap_response: (fn, err, response, ret) =>
+    switch fn.length
+      when 1
+        fn ret
+      when 2
+        fn err, ret
+      when 3
+        fn err, response, ret
+
   get: (query, fn) =>
     if 'function' is typeof query
       fn = query
@@ -108,9 +117,9 @@ API = callable class
 
     handle = (err, response, body) =>
       if 200 <= response.statusCode <= 299
-        return fn err, @_try_to_serialize response, body
+        return @wrap_response fn, err, response, @_try_to_serialize(response, body)
       else
-        return fn true, response.statusCode
+        return @wrap_response fn, true, response, null
 
     resp = @_request 'GET', opts, handle
 
@@ -124,11 +133,11 @@ API = callable class
     handle = (err, response, body) =>
       if 200 <= response.statusCode <= 299
         if response.statusCode == 204
-          return fn err, true
-        else
-          return fn err, true
+          return @wrap_response fn, err, response, true
+        else # Keep it ?
+          return @wrap_response fn, err, response, true
       else
-        return fn true, false
+        return @wrap_reponse fn, true, response, false
 
     resp = @_request 'DELETE', opts, handle
 
@@ -137,8 +146,8 @@ API = callable class
 
     handle = (err, response, body) =>
       if 200 <= response.statusCode <= 299
-        return fn err, @_try_to_serialize response, body
-      return fn true
+        return @wrap_response fn, err, response, @_try_to_serialize(response, body)
+      return @wrap_response fn, err, response, true
 
     resp = @_request 'POST', opts, handle
 
@@ -147,8 +156,8 @@ API = callable class
 
     handle = (err, response, body) =>
       if 200 <= response.statusCode <= 299
-        return fn err, @_try_to_serialize response, body
-      return fn true
+        return @wrap_response fn, err, response, @_try_to_serialize(response, body)
+      return @wrap_response fn, true, response, null
 
     resp = @_request 'PUT', opts, handle
 
@@ -157,8 +166,8 @@ API = callable class
 
     handle = (err, response, body) =>
       if 200 <= response.statusCode <= 299
-        return fn err, @_try_to_serialize response, body
-      return fn true
+        return @wrap_response fn, err, response, @_try_to_serialize(response, body)
+      return @wrap_response fn, err, response, true
 
     resp = @_request 'PATCH', opts, handle
 
