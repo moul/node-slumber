@@ -61,6 +61,11 @@ api = slumber.API 'http://slumber.in/api/v1/', { auth: ['demo', 'demo'] }, ->
   api('note').get(title__startswith="Bacon")
 ```
 
+Development
+-----------
+
+[![Gitter chat](https://badges.gitter.im/moul/node-slumber.png)](https://gitter.im/moul/node-slumber)
+
 Requirements
 ------------
 
