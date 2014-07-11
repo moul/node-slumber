@@ -73,6 +73,9 @@ API = callable class
         pass: @opts.auth[1]
         sentImmediately: true
 
+    if @opts.proxy
+      request_options.proxy = opts.proxy
+
     debug "#{method}", request_options.url
     req = request request_options, fn
 
