@@ -121,6 +121,8 @@ API = callable class
     handle = (err, response, body) =>
       if 200 <= response.statusCode <= 299
         return @wrap_response fn, err, response, @_try_to_serialize(response, body)
+      else if response?.statusCode
+        return @wrap_response fn, { "statusCode": response.statusCode }, response, null
       else
         return @wrap_response fn, true, response, null
 
