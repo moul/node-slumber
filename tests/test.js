@@ -46,7 +46,7 @@
     return res.end('Hello World !');
   });
 
-  app.get('/test-auth', function(req, res) {
+  app.get('/test-headers', function(req, res) {
     return res.json({
       'headers': req.headers
     });
@@ -296,7 +296,7 @@
         return api = slumber.API("http://localhost:" + port + "/", {
           auth: ['admin', 'secure']
         }, function() {
-          return api('test-auth').get(function(err, ret) {
+          return api('test-headers').get(function(err, ret) {
             assert.equal(err, null);
             assert.equal(ret.headers.authorization, 'Basic YWRtaW46c2VjdXJl');
             return done();
@@ -304,7 +304,7 @@
         });
       });
     });
-    return describe('Anonymous', function() {
+    describe('Anonymous', function() {
       before(function(done) {
         return freeport(function(err, port) {
           return app.listen(port, function() {
@@ -420,6 +420,68 @@
         });
       });
     });
+    return describe('Passing headers', function() {
+      var headers, headers_override;
+      headers = {
+        "X-AAA": 42,
+        "X-BBB": "test"
+      };
+      headers_override = {
+        "X-AAA": 43,
+        "X-CCC": "hello"
+      };
+      it('should pass headers when calling method', function(done) {
+        return freeport(function(err, port) {
+          return app.listen(port, function() {
+            return api = slumber.API("http://localhost:" + port + "/", {}, function() {
+              return api('test-headers').get({
+                headers: headers
+              }, function(err, ret) {
+                assert.equal(err, null);
+                assert.equal(ret.headers['x-aaa'], '42');
+                assert.equal(ret.headers['x-bbb'], 'test');
+                return done();
+              });
+            });
+          });
+        });
+      });
+      it('should pass headers globally', function(done) {
+        return freeport(function(err, port) {
+          return app.listen(port, function() {
+            return api = slumber.API("http://localhost:" + port + "/", {
+              headers: headers
+            }, function() {
+              return api('test-headers').get({}, function(err, ret) {
+                assert.equal(err, null);
+                assert.equal(ret.headers['x-aaa'], '42');
+                assert.equal(ret.headers['x-bbb'], 'test');
+                return done();
+              });
+            });
+          });
+        });
+      });
+      return it('should pass headers globally and override them when calling method', function(done) {
+        return freeport(function(err, port) {
+          return app.listen(port, function() {
+            return api = slumber.API("http://localhost:" + port + "/", {
+              headers: headers
+            }, function() {
+              return api('test-headers').get({
+                headers: headers_override
+              }, function(err, ret) {
+                assert.equal(err, null);
+                assert.equal(ret.headers['x-aaa'], '43');
+                assert.equal(ret.headers['x-bbb'], 'test');
+                assert.equal(ret.headers['x-ccc'], 'hello');
+                return done();
+              });
+            });
+          });
+        });
+      });
+    });
   });
 
   describe('Rare cases', function() {
@@ -427,7 +489,7 @@
     api = null;
     return describe('Non existing remote host', function() {
       api = slumber.API('http://alskdjgalskdjgalskdjgalskdjgalskdgj.com', {});
-      return it('should connect to express and return a string Hello World', function(done) {
+      return it('snould raise an handled error', function(done) {
         return api('lkasdjglaksdjglkasdjglkasdjglkasdg').get(function(err, ret) {
           assert.equal(ret, null);
           assert.equal(err.code, 'ENOTFOUND');
