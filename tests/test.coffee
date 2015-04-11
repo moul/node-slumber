@@ -294,3 +294,15 @@ describe 'Local Express', ->
           assert.equal 'Alfred', ret[1].user
           do done
 
+
+describe 'Rare cases', ->
+  api = null
+
+  describe 'Non existing remote host', ->
+    api = slumber.API 'http://alskdjgalskdjgalskdjgalskdjgalskdgj.com', {}
+    it 'should connect to express and return a string Hello World', (done) ->
+      api('lkasdjglaksdjglkasdjglkasdjglkasdg').get (err, ret) ->
+        assert.equal ret, null
+        assert.equal err.code, 'ENOTFOUND'
+        assert.equal err.errno, 'ENOTFOUND'
+        do done

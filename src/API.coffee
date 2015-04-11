@@ -119,6 +119,7 @@ API = callable class
     opts = @_prepare_opts query, 'args'
 
     handle = (err, response, body) =>
+      return @wrap_response fn, err, null, null if err
       if 200 <= response.statusCode <= 299
         return @wrap_response fn, err, response, @_try_to_serialize(response, body)
       else if response?.statusCode
