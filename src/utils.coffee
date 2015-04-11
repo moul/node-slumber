@@ -21,3 +21,13 @@ module.exports.callable = (ctor) ->
 
 module.exports.append_slash = (str) ->
   str.replace(/\/$/, '') + '/'
+
+
+exports.merge = (options, overrides) ->
+  extend (extend {}, options), overrides
+
+
+extend = exports.extend = (object, properties) ->
+  for key, val of properties
+    object[key] = val
+  return object

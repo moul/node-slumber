@@ -1,6 +1,6 @@
 querystring = require 'querystring'
 debug = require('debug') 'slumber:api'
-{callable, append_slash} = require './utils'
+{callable, append_slash, merge} = require './utils'
 request = require 'request'
 {Serializer} = require './Serializer'
 
@@ -52,14 +52,23 @@ API = callable class
 
     return body
 
-  _request: (method, kwargs, fn) =>
+  _construct_request: (method, kwargs) =>
     request_options =
       url: @base_url
       method: method
-      headers:
-        accept: @serializer.get_serializer().get_content_type()
+      headers: {}
+
+    if @opts.headers?
+      request_options.headers = merge request_options.headers, @opts.headers
+
+    if kwargs.headers?
+      request_options.headers = merge request_options.headers, kwargs.headers
+
     for key, value of @opts.request_opts
       request_options[key] = value unless request_options[key]?
+
+
+    request_options.headers.accept ?= @serializer.get_serializer().get_content_type()
 
     if kwargs.args?
       request_options.url += '?' + querystring.stringify kwargs.args
@@ -76,16 +85,21 @@ API = callable class
     if @opts.proxy
       request_options.proxy = opts.proxy
 
+    return request_options
+
+
+  _request: (method, kwargs, fn) =>
+    request_options = @_construct_request method, kwargs
+
     debug "#{method}", request_options.url
     req = request request_options, fn
 
   callable: @::_create_child
 
   _prepare_opts: (from, default_dest='args') =>
-    to = {
+    to =
       args: {}
       data: {}
-      }
 
     translation =
       query: 'args'
@@ -97,6 +111,8 @@ API = callable class
           section = translation[section]
         for k, v of value
           to[section][k] = v
+      else if key is 'headers'
+        to.headers = value
       else
         to[default_dest][key] = value
 

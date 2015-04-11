@@ -34,7 +34,7 @@ app.use connect.json()
 app.get '/', (req, res) ->
    res.end 'Hello World !'
 
-app.get '/test-auth', (req, res) ->
+app.get '/test-headers', (req, res) ->
   res.json 'headers': req.headers
 
 app.get '/customers', (req, res) ->
@@ -204,7 +204,7 @@ describe 'Local Express', ->
 
     it 'should send connection detail', (done) ->
       api = slumber.API "http://localhost:#{port}/", {auth: ['admin', 'secure']}, ->
-        api('test-auth').get (err, ret) ->
+        api('test-headers').get (err, ret) ->
           assert.equal err, null
           assert.equal ret.headers.authorization, 'Basic YWRtaW46c2VjdXJl'
           do done
@@ -294,13 +294,52 @@ describe 'Local Express', ->
           assert.equal 'Alfred', ret[1].user
           do done
 
+  describe 'Passing headers', ->
+    headers =
+      "X-AAA": 42
+      "X-BBB": "test"
+    headers_override =
+      "X-AAA": 43
+      "X-CCC": "hello"
+
+    it 'should pass headers when calling method', (done) ->
+      freeport (err, port) ->
+        app.listen port, ->
+          api = slumber.API "http://localhost:#{port}/", {}, ->
+            api('test-headers').get {headers: headers}, (err, ret) ->
+              assert.equal err, null
+              assert.equal ret.headers['x-aaa'], '42'
+              assert.equal ret.headers['x-bbb'], 'test'
+              do done
+
+    it 'should pass headers globally', (done) ->
+      freeport (err, port) ->
+        app.listen port, ->
+          api = slumber.API "http://localhost:#{port}/", {headers: headers}, ->
+            api('test-headers').get {}, (err, ret) ->
+              assert.equal err, null
+              assert.equal ret.headers['x-aaa'], '42'
+              assert.equal ret.headers['x-bbb'], 'test'
+              do done
+
+    it 'should pass headers globally and override them when calling method', (done) ->
+      freeport (err, port) ->
+        app.listen port, ->
+          api = slumber.API "http://localhost:#{port}/", {headers: headers}, ->
+            api('test-headers').get {headers: headers_override}, (err, ret) ->
+              assert.equal err, null
+              assert.equal ret.headers['x-aaa'], '43'
+              assert.equal ret.headers['x-bbb'], 'test'
+              assert.equal ret.headers['x-ccc'], 'hello'
+              do done
+
 
 describe 'Rare cases', ->
   api = null
 
   describe 'Non existing remote host', ->
     api = slumber.API 'http://alskdjgalskdjgalskdjgalskdjgalskdgj.com', {}
-    it 'should connect to express and return a string Hello World', (done) ->
+    it 'snould raise an handled error', (done) ->
       api('lkasdjglaksdjglkasdjglkasdjglkasdg').get (err, ret) ->
         assert.equal ret, null
         assert.equal err.code, 'ENOTFOUND'
