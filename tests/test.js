@@ -487,15 +487,23 @@
   describe('Rare cases', function() {
     var api;
     api = null;
-    return describe('Non existing remote host', function() {
+    describe('Non existing remote host', function() {
       api = slumber.API('http://alskdjgalskdjgalskdjgalskdjgalskdgj.com', {});
-      return it('snould raise an handled error', function(done) {
+      return it('should raise an handled error', function(done) {
         return api('lkasdjglaksdjglkasdjglkasdjglkasdg').get(function(err, ret) {
           assert.equal(ret, null);
           assert.equal(err.code, 'ENOTFOUND');
           assert.equal(err.errno, 'ENOTFOUND');
           return done();
         });
+      });
+    });
+    return describe('Call method without callback', function() {
+      api = slumber.API('http://alskdjgalskdjgalskdjgalskdjgalskdgj.com', {});
+      return it('should raise an exception', function() {
+        return assert.throws((function() {
+          return api('lkasdjglaksdjglkasdjglkasdjglkasdg').get();
+        }), Error);
       });
     });
   });

@@ -131,6 +131,7 @@ API = callable class
     if 'function' is typeof query
       fn = query
       query = {}
+    throw Error('Missing callback') unless fn?
 
     opts = @_prepare_opts query, 'args'
 
@@ -149,6 +150,7 @@ API = callable class
     if 'function' is typeof query
       fn = query
       query = {}
+    throw Error('Missing callback') unless fn?
 
     opts = @_prepare_opts query, 'args'
 
@@ -164,6 +166,8 @@ API = callable class
     resp = @_request 'DELETE', opts, handle
 
   post: (data, fn) =>
+    throw Error('Missing callback') unless fn?
+
     opts = @_prepare_opts data, 'data'
 
     handle = (err, response, body) =>
@@ -174,6 +178,8 @@ API = callable class
     resp = @_request 'POST', opts, handle
 
   put: (data, fn) =>
+    throw Error('Missing callback') unless fn?
+
     opts = @_prepare_opts data, 'data'
 
     handle = (err, response, body) =>
@@ -184,6 +190,8 @@ API = callable class
     resp = @_request 'PUT', opts, handle
 
   patch: (data, fn) =>
+    throw Error('Missing callback') unless fn?
+
     opts = @_prepare_opts data, 'data'
 
     handle = (err, response, body) =>
