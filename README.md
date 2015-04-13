@@ -38,28 +38,45 @@ api = slumber.API 'http://slumber.in/api/v1/', { auth: ['demo', 'demo'] }, ->
 
   # GET http://slumber.in/api/v1/note/
   #     Note: Any kwargs passed to get(), post(), put(), delete() will be used as url parameters
-  api('note').get()
+  api('note').get (err, data) ->
+    console.log err, data
+
+  # ---
+
+  callback = (err, data) ->
+    console.log err, data
 
   # POST http://slumber.in/api/v1/note/
-  new_post = api('note').post({'title': 'My Test Note', 'content': 'This is the content of my Test Note!'})
+  new_post = api('note').post({'title': 'My Test Note', 'content': 'This is the content of my Test Note!'}, cb)
 
   # PUT http://slumber.in/api/v1/note/{id}/
-  api('note')(new_post['id']).put({'content': 'I just changed the content of my Test Note!'})
+  api('note')(new_post['id']).put({'content': 'I just changed the content of my Test Note!'}, cb)
 
   # PATCH http://slumber.in/api/v1/note/{id}/
-  api('note')(new_post['id']).patch({'content': 'Wat!'})
+  api('note')(new_post['id']).patch({'content': 'Wat!'}, cb)
 
   # GET http://slumber.in/api/v1/note/{id}/
-  api('note')(new_post['id']).get()
+  api('note')(new_post['id']).get(cb)
 
   # DELETE http://slumber.in/api/v1/note/{id}/
-  api('note')(new_post['id']).delete()
+  api('note')(new_post['id']).delete(cb)
 
-  api('resource').get {username: "example", api_key: "1639eb74e86717f410c640d2712557aac0e989c8"}
+  api('resource').get {username: "example", api_key: "1639eb74e86717f410c640d2712557aac0e989c8"}, cb
 
   # GET http://slumber.in/api/v1/note/?title__startswith=Bacon
-  api('note').get(title__startswith="Bacon")
+  api('note').get(title__startswith="Bacon", cb)
 ```
+
+How to use callbacks
+--------------------
+
+`node-slumber` uses a dynamic callback mechanism, based on the arity of the callback.
+
+Depending on the callback arity, you will have:
+
+- with an arity of 1: `function(err)`
+- with an arity of 2: `function(err, processedData)`
+- with an arity of 3: `function(err, fullRequestResponse, processedData)`
 
 Debug
 -----
