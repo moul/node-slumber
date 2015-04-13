@@ -333,6 +333,44 @@ describe 'Local Express', ->
               assert.equal ret.headers['x-ccc'], 'hello'
               do done
 
+    it 'should have a default user-agent', (done) ->
+      freeport (err, port) ->
+        app.listen port, ->
+          api = slumber.API "http://localhost:#{port}/", {}, ->
+            api('test-headers').get {}, (err, ret) ->
+              assert.equal err, null
+              defaultVersion = require('../package.json').version
+              targetVersion = "node-slumber/#{defaultVersion}"
+              assert.equal ret.headers['user-agent'], targetVersion
+              do done
+
+    it 'should override user-agent globally', (done) ->
+      freeport (err, port) ->
+        app.listen port, ->
+          api = slumber.API "http://localhost:#{port}/", {headers: {'user-agent': 'test'}}, ->
+            api('test-headers').get {}, (err, ret) ->
+              assert.equal err, null
+              assert.equal ret.headers['user-agent'], 'test'
+              do done
+
+    it 'should override user-agent globally using capitalize', (done) ->
+      freeport (err, port) ->
+        app.listen port, ->
+          api = slumber.API "http://localhost:#{port}/", {headers: {'User-Agent': 'test'}}, ->
+            api('test-headers').get {}, (err, ret) ->
+              assert.equal err, null
+              assert.equal ret.headers['user-agent'], 'test'
+              do done
+
+    it 'should override user-agent when calling method', (done) ->
+      freeport (err, port) ->
+        app.listen port, ->
+          api = slumber.API "http://localhost:#{port}/", {}, ->
+            api('test-headers').get {headers: {'User-Agent': 'test'}}, (err, ret) ->
+              assert.equal err, null
+              assert.equal ret.headers['user-agent'], 'test'
+              do done
+
 
 describe 'Rare cases', ->
   api = null

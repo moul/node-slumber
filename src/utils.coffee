@@ -31,3 +31,11 @@ extend = exports.extend = (object, properties) ->
   for key, val of properties
     object[key] = val
   return object
+
+
+exports.hasInsensitive = (object, key) ->
+  return false unless key
+  key = key.toLowerCase()
+  for k, v of object
+    return true if key == k.toLowerCase()
+  return false

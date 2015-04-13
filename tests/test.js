@@ -462,7 +462,7 @@
           });
         });
       });
-      return it('should pass headers globally and override them when calling method', function(done) {
+      it('should pass headers globally and override them when calling method', function(done) {
         return freeport(function(err, port) {
           return app.listen(port, function() {
             return api = slumber.API("http://localhost:" + port + "/", {
@@ -475,6 +475,73 @@
                 assert.equal(ret.headers['x-aaa'], '43');
                 assert.equal(ret.headers['x-bbb'], 'test');
                 assert.equal(ret.headers['x-ccc'], 'hello');
+                return done();
+              });
+            });
+          });
+        });
+      });
+      it('should have a default user-agent', function(done) {
+        return freeport(function(err, port) {
+          return app.listen(port, function() {
+            return api = slumber.API("http://localhost:" + port + "/", {}, function() {
+              return api('test-headers').get({}, function(err, ret) {
+                var defaultVersion, targetVersion;
+                assert.equal(err, null);
+                defaultVersion = require('../package.json').version;
+                targetVersion = "node-slumber/" + defaultVersion;
+                assert.equal(ret.headers['user-agent'], targetVersion);
+                return done();
+              });
+            });
+          });
+        });
+      });
+      it('should override user-agent globally', function(done) {
+        return freeport(function(err, port) {
+          return app.listen(port, function() {
+            return api = slumber.API("http://localhost:" + port + "/", {
+              headers: {
+                'user-agent': 'test'
+              }
+            }, function() {
+              return api('test-headers').get({}, function(err, ret) {
+                assert.equal(err, null);
+                assert.equal(ret.headers['user-agent'], 'test');
+                return done();
+              });
+            });
+          });
+        });
+      });
+      it('should override user-agent globally using capitalize', function(done) {
+        return freeport(function(err, port) {
+          return app.listen(port, function() {
+            return api = slumber.API("http://localhost:" + port + "/", {
+              headers: {
+                'User-Agent': 'test'
+              }
+            }, function() {
+              return api('test-headers').get({}, function(err, ret) {
+                assert.equal(err, null);
+                assert.equal(ret.headers['user-agent'], 'test');
+                return done();
+              });
+            });
+          });
+        });
+      });
+      return it('should override user-agent when calling method', function(done) {
+        return freeport(function(err, port) {
+          return app.listen(port, function() {
+            return api = slumber.API("http://localhost:" + port + "/", {}, function() {
+              return api('test-headers').get({
+                headers: {
+                  'User-Agent': 'test'
+                }
+              }, function(err, ret) {
+                assert.equal(err, null);
+                assert.equal(ret.headers['user-agent'], 'test');
                 return done();
               });
             });

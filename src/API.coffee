@@ -1,6 +1,6 @@
 querystring = require 'querystring'
 debug = require('debug') 'slumber:api'
-{callable, append_slash, merge} = require './utils'
+{callable, append_slash, merge, hasInsensitive} = require './utils'
 request = require 'request'
 {Serializer} = require './Serializer'
 
@@ -84,6 +84,10 @@ API = callable class
 
     if @opts.proxy
       request_options.proxy = opts.proxy
+
+    unless hasInsensitive request_options.headers, 'user-agent'
+      defaultVersion = require('../package.json').version
+      request_options.headers['User-Agent'] = "node-slumber/#{defaultVersion}"
 
     return request_options
 
