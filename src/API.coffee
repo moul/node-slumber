@@ -70,8 +70,11 @@ API = callable class
 
     request_options.headers.accept ?= @serializer.get_serializer().get_content_type()
 
-    if kwargs.args?
+    if Object.keys(kwargs.args).length != 0
       request_options.url += '?' + querystring.stringify kwargs.args
+    else
+      if request_options.url.substr(-1) == '/'
+        request_options.url = request_options.url.substr(0, request_options.url.length - 1)
 
     if kwargs.data?
       request_options.form = kwargs.data
