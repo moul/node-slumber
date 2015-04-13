@@ -61,6 +61,17 @@ api = slumber.API 'http://slumber.in/api/v1/', { auth: ['demo', 'demo'] }, ->
   api('note').get(title__startswith="Bacon")
 ```
 
+Debug
+-----
+
+`node-slumber` uses the [debug](https://www.npmjs.com/package/debug) package.
+
+To enable debug you can use the environment variable `DEBUG=` as :
+
+- `DEBUG='slumber:api' ...` to see debug for `node-slumber` API calls only
+- `DEBUG='slumber:*' ...` to see debug for `node-slumber`, more verbose
+- `DEBUG='*' node ...` to see debug for all modules using `debug`, extremely verbose
+
 Development
 -----------
 
