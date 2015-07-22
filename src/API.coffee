@@ -168,7 +168,7 @@ API = callable class
         else # Keep it ?
           return @wrap_response fn, err, response, true
       else
-        return @wrap_reponse fn, true, response, false
+        return @wrap_response fn, true, response, false
 
     resp = @_request 'DELETE', opts, handle
 
