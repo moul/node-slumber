@@ -32,7 +32,9 @@ class JsonSerializer extends BaseSerializer
   key: 'json'
 
   loads: (data) =>
-    return JSON.parse data
+    if typeof data == 'string'
+      return JSON.parse data
+    return data
 
   dumps: (data) =>
     return JSON.stringify data
