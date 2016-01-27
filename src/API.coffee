@@ -77,7 +77,10 @@ API = callable class
         request_options.url = request_options.url.substr(0, request_options.url.length - 1)
 
     if kwargs.data?
-      request_options.form = kwargs.data
+      prop = 'form'
+      if method == 'PUT' || method == 'POST'
+        prop = 'json'
+      request_options[prop] = kwargs.data
 
     if @opts.auth
       request_options.auth =
