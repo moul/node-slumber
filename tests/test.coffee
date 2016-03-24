@@ -4,8 +4,8 @@ querystring = require 'querystring'
 url = require 'url'
 assert = require 'assert'
 express = require 'express'
-connect = require 'connect'
 freeport = require 'freeport'
+bodyParser = require 'body-parser'
 
 slumber = require '..'
 
@@ -28,8 +28,8 @@ CUSTOMERS =
 
 
 app = express()
-app.use connect.urlencoded()
-app.use connect.json()
+app.use bodyParser.urlencoded()
+app.use bodyParser.json()
 
 app.get '/', (req, res) ->
    res.end 'Hello World !'
@@ -153,7 +153,7 @@ describe 'Serializer', ->
       it 'should dumps a javascript object to a yaml encoded string', ->
         ret = serializer.dumps {a: 42, b: [43, 45]}
         assert.equal 'string', typeof ret
-        assert.equal ret, 'a: 42\nb:\n  - 43\n  - 45\n'
+        assert.equal ret, 'a: 42\nb:\n    - 43\n    - 45\n'
 
   describe 'JsonSerializer', ->
     api = slumber.API base_url, {'format': 'json'}
