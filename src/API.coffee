@@ -78,9 +78,9 @@ API = callable class
 
     if kwargs.data?
       prop = 'json'
-      if kwargs.headers && kwargs.headers['content-type'] && kwargs.headers['content-type'] == 'application/x-www-form-urlencoded'
+      if kwargs.headers?['content-type'] == 'application/x-www-form-urlencoded'
         prop = 'form'
-  
+
       request_options[prop] = kwargs.data
 
     if @opts.auth
