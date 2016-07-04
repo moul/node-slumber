@@ -153,7 +153,7 @@ describe 'Serializer', ->
       it 'should dumps a javascript object to a yaml encoded string', ->
         ret = serializer.dumps {a: 42, b: [43, 45]}
         assert.equal 'string', typeof ret
-        assert.equal ret, 'a: 42\nb:\n    - 43\n    - 45\n'
+        assert.equal ret, 'a: 42\nb:\n  - 43\n  - 45\n'
 
   describe 'JsonSerializer', ->
     api = slumber.API base_url, {'format': 'json'}
