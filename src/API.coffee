@@ -83,6 +83,9 @@ API = callable class
 
       request_options[prop] = kwargs.data
 
+    if kwargs.formData?
+      request_options.formData = kwargs.formData
+
     if @opts.auth
       request_options.auth =
         user: @opts.auth[0]
@@ -111,6 +114,7 @@ API = callable class
     to =
       args: {}
       data: {}
+      formData: {}
 
     translation =
       query: 'args'
@@ -180,6 +184,18 @@ API = callable class
     throw Error('Missing callback') unless fn?
 
     opts = @_prepare_opts data, 'data'
+
+    handle = (err, response, body) =>
+      if 200 <= response.statusCode <= 299
+        return @wrap_response fn, err, response, @_try_to_serialize(response, body)
+      return @wrap_response fn, err, response, true
+
+    resp = @_request 'POST', opts, handle
+
+  postForm: (formData, fn) =>
+    throw Error('Missing callback') unless fn?
+
+    opts = @_prepare_opts formData, 'formData'
 
     handle = (err, response, body) =>
       if 200 <= response.statusCode <= 299
