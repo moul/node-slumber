@@ -32,7 +32,7 @@
     "yamljs": "^0.2.8"
   },
   "optionalDependencies": {
-    "yamljs": "0.1"
+    "yamljs": "0.2"
   },
   "keywords": [
     "slumber",
