@@ -83,7 +83,7 @@ API = callable class
 
       request_options[prop] = kwargs.data
 
-    if kwargs.formData? && method isnt 'GET'
+    if kwargs.formData? && method is 'POST'
       request_options.formData = kwargs.formData
 
     if @opts.auth
