@@ -371,6 +371,10 @@ describe 'Local Express', ->
               assert.equal ret.headers['user-agent'], 'test'
               do done
 
+describe 'XHR', ->
+  it 'should throw since XMLHttpRequest is not defined', ->
+    api = slumber.API base_url, { http_client: 'xhr' }
+    assert.throws (-> api('something').get ->), /ReferenceError: XMLHttpRequest is not defined/
 
 describe 'Rare cases', ->
   api = null
