@@ -13,6 +13,7 @@ API = callable class
     @opts.append_slash ?= true
     #@opts.session ?= null
     @opts.auth ?= null
+    @opts.http_client ?= 'request'
     @opts.request_opts ?=
       rejectUnauthorized: false
 
@@ -40,7 +41,7 @@ API = callable class
     return child
 
   _try_to_serialize: (response, body) =>
-    if response.headers['content-type']?
+    if response.headers? and response.headers['content-type']?
       content_type = response.headers['content-type'].split(';')[0].replace(/^\s*|\s*$/g, '')
 
       try
@@ -99,6 +100,12 @@ API = callable class
       defaultVersion = require('../package.json').version
       request_options.headers['User-Agent'] = "node-slumber/#{defaultVersion}"
 
+    if @opts.http_client == 'xhr'
+      white_listed_headers = [ 'authorization', 'accept' ]
+      for key, value of request_options.headers
+        if key.toLowerCase() not in white_listed_headers
+          delete request_options.headers[key]
+
     return request_options
 
 
@@ -106,7 +113,10 @@ API = callable class
     request_options = @_construct_request method, kwargs
 
     debug "#{method}", request_options.url
-    req = request request_options, fn
+    if @opts.http_client == 'xhr'
+      req = require('browser-request') request_options, fn
+    else
+      req = request request_options, fn
 
   callable: @::_create_child
 

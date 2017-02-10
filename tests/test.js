@@ -551,6 +551,18 @@
     });
   });
 
+  describe('XHR', function() {
+    return it('should throw since XMLHttpRequest is not defined', function() {
+      var api;
+      api = slumber.API(base_url, {
+        http_client: 'xhr'
+      });
+      return assert.throws((function() {
+        return api('something').get(function() {});
+      }), /ReferenceError: XMLHttpRequest is not defined/);
+    });
+  });
+
   describe('Rare cases', function() {
     var api;
     api = null;
