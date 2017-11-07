@@ -100,12 +100,6 @@ API = callable class
       defaultVersion = require('../package.json').version
       request_options.headers['User-Agent'] = "node-slumber/#{defaultVersion}"
 
-    if @opts.http_client == 'xhr'
-      white_listed_headers = [ 'authorization', 'accept' ]
-      for key, value of request_options.headers
-        if key.toLowerCase() not in white_listed_headers
-          delete request_options.headers[key]
-
     return request_options
 
 
