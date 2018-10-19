@@ -87,7 +87,7 @@ To enable debug you can use the environment variable `DEBUG=` as :
 Development
 -----------
 
-[![Gitter chat](https://badges.gitter.im/moul/node-slumber.png)](https://gitter.im/moul/node-slumber)
+[![Gitter chat](https://badges.gitter.im/moul/node-slumber.png)](https://gitter.im/moul/node-slumber) [![GuardRails badge](https://badges.production.guardrails.io/moul/node-slumber.svg)](https://www.guardrails.io)
 
 Requirements
 ------------
